@@ -85,7 +85,7 @@ class BlockStart(Token):
 
 class BlockEnd(Token):
     def __str__(self) -> str:
-        return ""
+        return "<BlockEnd>\n"
 
 
 class Comment(Token):
@@ -152,7 +152,7 @@ tokens = mylist()
 for item in test_list:
     tokens.append(item)
 
-
+indent_level = 0
 i = -1
 while True:
     i += 1
@@ -161,7 +161,18 @@ while True:
     if check_stream(i, tokens, [Key, NewLine], direction=-1, include_self=False):
         print(i)
         tokens.insert(i, BlockStart())
-
+        indent_level += 1
+    if check_stream(
+        i,
+        tokens,
+        [NewLine] + [Indent] * (indent_level - 1),
+        direction=1,
+        include_self=True,
+    ) and not check_stream(
+        i, tokens, [NewLine] + [Indent] * indent_level, direction=1, include_self=True
+    ):
+        tokens.insert(i + 1, BlockEnd())
+        indent_level -= 1
 pprint(tokens)
 print_tokens()
 
